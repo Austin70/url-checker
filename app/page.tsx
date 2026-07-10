@@ -9,12 +9,15 @@ import getUrlContentExists from "./api/api";
 
 
 export default function Home() {
-  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   const [inputUrl, setInputUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  let counter = 0;
+
   const isValidHttpUrl = (urlParam: string) => {
   let url: URL;
+ 
   
   try {
     url = new URL(urlParam);
@@ -25,36 +28,44 @@ export default function Home() {
   if (url.origin.split('.').length === 1 || url.origin.split('.')[1].length < 2) {
     return false;
   }
-  console.log(url.origin.split('.').length === 1, url.origin.split('.')[1], url.origin.split('.')[1]?.length < 2)
 
   return url.protocol === "http:" || url.protocol === "https:";
 }
-
+ let i=0;
   const getUrlExists = async(data: string) => {
-   const response = await getUrlContentExists(data)
-   setError(response.message)
-   setIsLoading(false)
+    console.log("url start api call", ++i, counter, data)
+    setIsLoading(true);
+    // ++counter
+    const response = await getUrlContentExists(data)
+    counter--
+    if(counter == 0) {
+      setMessage(response.message)
+      setIsLoading(false)
+    }
+    console.log("url api end call", i, counter)
   }
 
-  const handleSearch = useMemo(() => debounce(getUrlExists, 1000),
+  const handleSearch = useMemo(() => debounce((arg:string) => {
+    ++counter
+    getUrlExists(arg)
+  }, 1000),
     []
   );
 
   // console.log(handleSearch, "handleSearch")
 
-  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputUrl(e.target.value);
 
     if(isValidHttpUrl(e.target.value)) {
-      setError("");
+      setMessage("");
     } 
     else {
-      setError("Please enter a valid URL.");
+      setMessage("Please enter a valid URL.");
       setIsLoading(false);
       handleSearch.cancel();
       return
     }
-
     handleSearch(e.target.value)
     setIsLoading(true);
   
@@ -73,7 +84,7 @@ export default function Home() {
         onChange={handleChange}
         value={inputUrl}
       />
-      {error && !isLoading && <p className={` ml-2 ${error == 'Folder exists in  server' || error == 'File exists in server' || error == 'Path exist in server' ? 'text-green-500' : 'text-red-500'}`}>{error}</p>}
+      {message && !isLoading && <p className={` ml-2 ${message == 'Folder exists in  server' || message == 'File exists in server' || message == 'Path exist in server' ? 'text-green-500' : 'text-red-500'}`}>{message}</p>}
       {isLoading && <p className="ml-2 text-blue-500">Checking URL...</p>}
     </>
   );
