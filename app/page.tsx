@@ -12,7 +12,13 @@ export default function Home() {
   const [message, setMessage] = useState("");
   const [inputUrl, setInputUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [checkedUrl, setCheckedUrl] = useState(""); //Could replace it with useRef
+  const [checkedUrl, setCheckedUrl] = useState("");
+
+  useEffect(() => {
+    return () => {
+      counter=0
+    }
+  },[])
 
   const isMessageColorGreen = message == 'Folder exists in  server' || message == 'File exists in server' || message == 'Path exist in server'; //Place all the constants in constants folder
   const isMessageCurrent = checkedUrl == inputUrl
@@ -32,24 +38,25 @@ export default function Home() {
 
   return url.protocol === "http:" || url.protocol === "https:";
 }
-  const getUrlExists = async(data: string) => {
-    console.log("url start api call", counter, data)
+  const getUrlExists = async(data: string, id: number) => {
+    console.log("url start api call", counter, data, id)
     setIsLoading(true);
 
     const response = await getUrlContentExists(data)
-    counter--
+    // counter--
 
-    if(counter == 0) {
+    if(counter == id) {
       setMessage(response.message)
       setCheckedUrl(data)
       setIsLoading(false)
+      
     }
     console.log("url api end call", counter)
   }
 
   const handleSearch = useMemo(() => debounce((arg:string) => {
     ++counter
-    getUrlExists(arg)
+    getUrlExists(arg, counter)
   }, 1000),
     []
   );
