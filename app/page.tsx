@@ -5,24 +5,23 @@ import {debounce} from "lodash";
 
 import getUrlContentExists from "./api/api";
 
-//  let i=0;
  let counter = 0;
 
 export default function Home() {
+ 
   const [message, setMessage] = useState("");
   const [inputUrl, setInputUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [checkedUrl, setCheckedUrl] = useState("");
+  const [checkedUrl, setCheckedUrl] = useState(""); //Could replace it with useRef
 
-
-  // let counter = 0;
+  const isMessageColorGreen = message == 'Folder exists in  server' || message == 'File exists in server' || message == 'Path exist in server'; //Place all the constants in constants folder
+  const isMessageCurrent = checkedUrl == inputUrl
 
   const isValidHttpUrl = (urlParam: string) => {
   let url: URL;
  
-  
   try {
-    url = new URL(urlParam);
+    url = new URL(urlParam); //Could use Regex commented above but will not satisfy all cases
   } catch (_) {
     return false;  
   }
@@ -34,18 +33,17 @@ export default function Home() {
   return url.protocol === "http:" || url.protocol === "https:";
 }
   const getUrlExists = async(data: string) => {
-    // console.log("url start api call", ++i, counter, data, inputUrl)
     console.log("url start api call", counter, data)
     setIsLoading(true);
-    // ++counter
+
     const response = await getUrlContentExists(data)
     counter--
+
     if(counter == 0) {
       setMessage(response.message)
       setCheckedUrl(data)
       setIsLoading(false)
-      }
-    // console.log("url api end call", i, counter)
+    }
     console.log("url api end call", counter)
   }
 
@@ -56,13 +54,13 @@ export default function Home() {
     []
   );
 
-  // console.log(handleSearch, "handleSearch")
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputUrl(e.target.value);
-    setCheckedUrl(e.target.value)
+    const newUrl = e.target.value
 
-    if(isValidHttpUrl(e.target.value)) {
+    setInputUrl(newUrl);
+    setCheckedUrl(newUrl)
+
+    if(isValidHttpUrl(newUrl)) {
       setMessage("");
     } 
     else {
@@ -71,9 +69,9 @@ export default function Home() {
       handleSearch.cancel();
       return
     }
-    handleSearch(e.target.value)
+
+    handleSearch(newUrl)
     setIsLoading(true);
-  
   };
 
   return (
@@ -89,9 +87,8 @@ export default function Home() {
         onChange={handleChange}
         value={inputUrl}
       />
-      {/* {console.log(message, isLoading, checkedUrl == inputUrl, checkedUrl, inputUrl )} */}
-      {message && !isLoading && checkedUrl == inputUrl && <p className={` ml-2 ${message == 'Folder exists in  server' || message == 'File exists in server' || message == 'Path exist in server' ? 'text-green-500' : 'text-red-500'}`}>{message}</p>}
-      {(isLoading || checkedUrl != inputUrl) && <p className="ml-2 text-blue-500">Checking URL...</p>}
+      {message && !isLoading && isMessageCurrent && <p className={` ml-2 ${isMessageColorGreen ? 'text-green-500' : 'text-red-500'}`}>{message}</p>}
+      {(isLoading || !isMessageCurrent) && <p className="ml-2 text-blue-500">Checking URL...</p>}
     </>
   );
 }

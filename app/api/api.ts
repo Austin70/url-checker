@@ -2,11 +2,11 @@ import { urlErrors } from "../types/types";
 
 const getMessage = (host:string, url: URL, data: string, validFileUrl:string, isFolderStructureCorrect: boolean, urlPathArray: string[]) => {
 
-  if (host != url.hostname) {
+  if (host != url.hostname) { // Need to remove www if present
    return  "host does not exist in server";
   }
 
-  if (data.toLowerCase() == validFileUrl.toLowerCase()) {
+  if (data.toLowerCase() == validFileUrl.toLowerCase()) { // Need to remove protocol
     return "File exists in server";
   }
 
